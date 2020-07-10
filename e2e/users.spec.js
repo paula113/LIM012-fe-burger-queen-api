@@ -5,9 +5,9 @@ const url = require('url');
 const qs = require('querystring');
 const config = require('../config');
 
-console.log(url);
+// console.log(url);
 
-console.log(qs);
+// console.log(qs);
 
 const {
   fetch,
@@ -25,12 +25,12 @@ const parseLinkHeader = (str) => str.split(',')
 describe('GET /users', () => {
   it('should fail with 401 when no auth', () => (
     fetch('/users').then((resp) => expect(resp.status).toBe(401))
-  ));
+  ));// ✓
 
   it('should fail with 403 when not admin', () => (
     fetchAsTestUser('/users')
       .then((resp) => expect(resp.status).toBe(403))
-  ));
+  ));// ✓
 
   it('should get users', () => (
     fetchAsAdmin('/users')
@@ -42,7 +42,8 @@ describe('GET /users', () => {
         expect(Array.isArray(json)).toBe(true);
         expect(json.length > 0).toBe(true);
         // TODO: Check that the results are actually the "expected" user objects
-      })
+        console.log(json);
+      })// ✓ FALTA TODO
   ));
 
   it('should get users with pagination', () => (
@@ -50,8 +51,8 @@ describe('GET /users', () => {
       .then((resp) => {
         expect(resp.status).toBe(200);
         // eslint-disable-next-line no-console
-        console.log(Object.keys(resp));
-        console.log(resp.headers);
+        // console.log(Object.keys(resp));
+        // console.log(resp.headers);
         return resp.json().then((json) => ({ headers: resp.headers, json }));
       })
       .then(({ headers, json }) => {

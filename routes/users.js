@@ -8,13 +8,13 @@ const {
   requireAdmin,
 } = require('../middleware/auth');
 
-const { getData } = require('../controller/users');
+const { getData } = require('../controller/users');//
 
 const {
   getDataByKeyword, postData, updateDataByKeyword, deleteData,
 } = require('../db-data/sql_functions');
 
-const { dataError } = require('../utils/utils');
+const { dataError, validate, valPassword } = require('../utils/utils');
 
 const initAdminUser = (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
@@ -146,39 +146,43 @@ module.exports = (app, next) => {
    * @code {401} si no hay cabecera de autenticación
    * @code {403} si ya existe usuaria con ese `email`
    */
-  app.post('/users', requireAdmin, async (_req, resp, _next) => {
+  app.post('/users', requireAdmin, (_req, resp, _next) => {
     // Para verificar valores
     const { email, password, roles } = _req.body;
+
     // eslint-disable-next-line no-console
-    const condition = (!email || email === '') && (!password || password === '');
-    // console.log(_req.body);
-    // console.log(!email || email === '');// = FT = T
-    // console.log(!password || password === '');// = TF = T
-    // console.log(`condition ${condition}`);// T && T = 400
+    const validateEmail = validate(email);
+    const validatePassword = valPassword(password);
+    const isThereHeaders = !_req.headers.authorization;
+    const message = { mensaje: 'Missing email or password' };
+    const areInvalid = (validateEmail || validatePassword);
+    const sendError = dataError(areInvalid, !_req.headers.authorization, message, resp);
 
-    dataError(condition, !_req.headers.authorization, resp);
-    // Para encriptar password
-    // const role = (roles.admin === true);
-    const newUserdetails = {
-      email,
-      userpassword: bcrypt.hashSync(password, 10),
-      // rolesAdmin: role,
-    };
+    const validateDatabeforeDB = areInvalid ? sendError : checkDB;
 
-    // Para saber si usuario existe en la base de datos
-
-    getDataByKeyword('users', 'email', email)
-      .then(() => resp.status(403).send({ message: `Ya existe usuaria con el email : ${email}` }))
-      .catch(() => {
-        postData('users', newUserdetails)
-          .then((result) => resp.status(200).send(
-            {
-              _id: result.insertId,
-              user: newUserdetails.email,
-              roles: { admin: newUserdetails.rolesAdmin },
-            },
-          ));
-      });
+    if (!!(validateEmail) && !condition1) {
+      const role = roles ? roles.admin : false;
+      console.log(`password ${password}`);
+      const newUserdetails = {
+        email,
+        userpassword: bcrypt.hashSync(password, 10),
+        rolesAdmin: role,
+      };
+      getDataByKeyword('users', 'email', email)
+        .then(() => resp.status(403).send({ message: `Ya existe usuaria con el email : ${email}` }))
+        .catch(() => {
+          postData('users', newUserdetails)
+            .then((result) => resp.status(200).send(
+              {
+                _id: result.insertId,
+                user: newUserdetails.email,
+                roles: { admin: newUserdetails.rolesAdmin },
+              },
+            ));
+        });
+    } else { // ! because email or passwor are invalid
+      return dataError(!condition1, condition2, message, resp);
+    }
   });
   /**
    * @name PUT /users

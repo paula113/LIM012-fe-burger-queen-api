@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // const query = require('../db-data/sql_functions');
 const pool = require('../db-data/bq_data');
 const { pagination } = require('../utils/utils');
@@ -14,7 +15,8 @@ module.exports = {
       resp.header('link', response.link);
       if (response.list) {
         const jsonUserResp = response.list.map((x) => {
-          const role = (x.rolesAdmin) || false;
+          console.log(`${x.email} soy admin? ${x.rolesAdmin}`);
+          const role = x.rolesAdmin === 1;
           return {
             _id: x.id,
             email: x.email,
