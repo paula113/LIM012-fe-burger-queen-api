@@ -236,7 +236,7 @@ module.exports = (app, next) => {
         }
         const userID = (user[0]._id).toString();
         updateDataByKeyword('users', updatedDetails, keyword, str)
-          .then(() => getDataByKeyword('users', keyword, str)
+          .then(() => getDataByKeyword('users', keyword, (email || password || roles))
             .then((user) => _resp.status(200).send(
               {
                 _id: user[0]._id,
